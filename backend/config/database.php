@@ -79,6 +79,23 @@ return [
                 PDO::MYSQL_ATTR_SSL_CA => env('MYSQL_ATTR_SSL_CA'),
             ]) : [],
         ],
+        'mysql_tercera' => [
+            'driver' => 'mysql',
+            'host' => env('DB3_HOST', '127.0.0.1'),
+            'port' => env('DB3_PORT', '3306'),
+            'database' => env('DB3_DATABASE', 'laravel'),
+            'username' => env('DB3_USERNAME', 'root'),
+            'password' => env('DB3_PASSWORD', ''),
+            'charset' => env('DB3_CHARSET', 'utf8'),
+            'collation' => env('DB3_COLLATION', 'utf8_unicode_ci'),
+            'prefix' => '',
+            'prefix_indexes' => true,
+            'strict' => true,
+            'engine' => null,
+            'options' => extension_loaded('pdo_mysql') ? array_filter([
+                PDO::MYSQL_ATTR_SSL_CA => env('MYSQL_ATTR_SSL_CA'),
+            ]) : [],
+        ],
 
         'mariadb' => [
             'driver' => 'mariadb',

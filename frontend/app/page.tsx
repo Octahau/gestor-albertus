@@ -1,42 +1,74 @@
-"use client"
+"use client";
 
-import type React from "react"
-
-import { useState } from "react"
-import { useRouter } from "next/navigation"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Card } from "@/components/ui/card"
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Card } from "@/components/ui/card";
+import {AlertMessage} from "@/components/alert-message"; 
+import axios from "axios";
+import api from "@/lib/axiosInstance";
 
 export default function LoginPage() {
-  const router = useRouter()
-  const [email, setEmail] = useState("")
-  const [password, setPassword] = useState("")
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState("")
+  const router = useRouter();
+  const [usuario, setUsuario] = useState("");
+  const [contra, setContra] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [alert, setAlert] = useState<{ type: "success" | "error" | "warning"; message: string } | null>(null);
+
+  // Si ya hay un usuario logueado, redirigir al inventario
+  useEffect(() => {
+    const user = localStorage.getItem("user");
+    if (user) {
+      router.push("/inventario");
+    }
+  }, [router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setLoading(true)
-    setError("")
+    e.preventDefault();
+    setLoading(true);
+    setAlert(null);
 
     try {
-      if (email && password) {
-        localStorage.setItem("auth_token", "demo_token")
-        router.push("/inventario")
+      const response = await api.post("login", {
+        usuario,
+        contra,
+      });
+
+      if (response.data.success) {
+        // Mensaje de éxito
+        setAlert({ type: "success", message: "Inicio de sesión exitoso" });
+
+        // Guarda usuario en localStorage
+        localStorage.setItem("user", JSON.stringify(response.data.user));
+
+        // Redirige al inventario después de unos segundos
+        setTimeout(() => router.push("/inventario"), 1500);
       } else {
-        setError("Por favor completa todos los campos")
+        // Mensaje de error del backend
+        setAlert({
+          type: "error",
+          message: response.data.message || "Error al iniciar sesión",
+        });
       }
-    } catch (err) {
-      setError("Error al iniciar sesión")
+    } catch (err: any) {
+      if (axios.isAxiosError(err)) {
+        const msg = err.response?.data?.message ?? "Error de conexión con el servidor";
+        setAlert({ type: "error", message: msg });
+      } else {
+        setAlert({ type: "error", message: "Error desconocido" });
+      }
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-white to-yellow-50 p-4">
-      <Card className="w-full max-w-md shadow-lg border-0">
+    <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-white to-yellow-50 p-4 relative">
+      {/* Componente de alerta dinámica */}
+      {alert && <AlertMessage type={alert.type} message={alert.message} />}
+
+      <Card className="w-full max-w-md shadow-lg border-0 z-10">
         <div className="p-6 sm:p-8">
           <div className="text-center mb-8">
             <h1 className="text-2xl sm:text-3xl font-bold text-gray-800 mb-2">Inventario</h1>
@@ -47,10 +79,10 @@ export default function LoginPage() {
             <div>
               <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-2">Usuario</label>
               <Input
-                type="email"
-                placeholder="correo@empresa.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                type="text"
+                placeholder="Ingrese su usuario"
+                value={usuario}
+                onChange={(e) => setUsuario(e.target.value)}
                 className="rounded-lg border-gray-300 text-sm"
               />
             </div>
@@ -60,13 +92,11 @@ export default function LoginPage() {
               <Input
                 type="password"
                 placeholder="••••••••"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                value={contra}
+                onChange={(e) => setContra(e.target.value)}
                 className="rounded-lg border-gray-300 text-sm"
               />
             </div>
-
-            {error && <p className="text-red-500 text-xs sm:text-sm">{error}</p>}
 
             <Button
               type="submit"
@@ -83,5 +113,5 @@ export default function LoginPage() {
         </div>
       </Card>
     </div>
-  )
+  );
 }
