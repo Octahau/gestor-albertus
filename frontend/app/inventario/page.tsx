@@ -1,43 +1,44 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { Button } from "@/components/ui/button"
-import { Card } from "@/components/ui/card"
-import { SelectInput } from "@/components/select-input"
-import { TextInput } from "@/components/text-input"
-import api from "@/lib/axiosInstance"
-import InventoryTable from "@/components/inventory-table"
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { SelectInput } from "@/components/select-input";
+import { TextInput } from "@/components/text-input";
+import api from "@/lib/axiosInstance";
+import InventoryTable from "@/components/inventory-table";
+import { AiOutlineCamera } from "react-icons/ai";
 
 interface ProductItem {
-  id: string
-  codigo: string
-  descripcion: string
-  cantidad: number
-  precioUnitario: number
-  importe: number
+  id: string;
+  codigo: string;
+  descripcion: string;
+  cantidad: number;
+  precioUnitario: number;
+  importe: number;
 }
 
 export default function InventoryPage() {
-  const [productoOrigen, setProductoOrigen] = useState("")
-  const [operacion, setOperacion] = useState("")
-  const [fecha, setFecha] = useState(new Date().toISOString().split("T")[0])
-  const [sucursal, setSucursal] = useState("")
-  const [tipoCode, setTipoCode] = useState("codigo")
-  const [codigo, setCodigo] = useState("")
-  const [cantidad, setCantidad] = useState("")
-  const [precioVenta, setPrecioVenta] = useState("0.00")
-  const [importe, setImporte] = useState("0.00")
-  const [iva, setIva] = useState("0.0")
-  const [porc, setPorc] = useState("0.0")
-  const [productos, setProductos] = useState<ProductItem[]>([])
-  const [observacion, setObservacion] = useState("")
-
-  const total = productos.reduce((sum, item) => sum + item.importe, 0)
+  const [productoOrigen, setProductoOrigen] = useState("");
+  const [operacion, setOperacion] = useState("");
+  const [fecha, setFecha] = useState(new Date().toISOString().split("T")[0]);
+  const [sucursal, setSucursal] = useState("");
+  const [tipoCode, setTipoCode] = useState("codigo");
+  const [codigo, setCodigo] = useState("");
+  const [cantidad, setCantidad] = useState("");
+  const [precioVenta, setPrecioVenta] = useState("0.00");
+  const [importe, setImporte] = useState("0.00");
+  const [iva, setIva] = useState("0.0");
+  const [porc, setPorc] = useState("0.0");
+  const [productos, setProductos] = useState<ProductItem[]>([]);
+  const [observacion, setObservacion] = useState("");
+  const [showScanner, setShowScanner] = useState(false);
+  const total = productos.reduce((sum, item) => sum + item.importe, 0);
 
   const handleAgregarProducto = async () => {
     if (!codigo || !cantidad) {
-      alert("Por favor completa los campos requeridos")
-      return
+      alert("Por favor completa los campos requeridos");
+      return;
     }
 
     try {
@@ -48,31 +49,31 @@ export default function InventoryPage() {
         cantidad: Number.parseFloat(cantidad),
         precioUnitario: Number.parseFloat(precioVenta),
         importe: Number.parseFloat(cantidad) * Number.parseFloat(precioVenta),
-      }
+      };
 
-      setProductos([...productos, nuevoProducto])
-      setCodigo("")
-      setCantidad("")
-      setPrecioVenta("0.00")
+      setProductos([...productos, nuevoProducto]);
+      setCodigo("");
+      setCantidad("");
+      setPrecioVenta("0.00");
     } catch (error) {
-      console.error("Error agregando producto:", error)
+      console.error("Error agregando producto:", error);
     }
-  }
+  };
 
   const handleEliminarProducto = (id: string) => {
-    setProductos(productos.filter((p) => p.id !== id))
-  }
+    setProductos(productos.filter((p) => p.id !== id));
+  };
 
   const handleLimpiarCampos = () => {
-    setProductoOrigen("")
-    setOperacion("")
-    setSucursal("")
-    setCodigo("")
-    setCantidad("")
-    setPrecioVenta("0.00")
-    setProductos([])
-    setObservacion("")
-  }
+    setProductoOrigen("");
+    setOperacion("");
+    setSucursal("");
+    setCodigo("");
+    setCantidad("");
+    setPrecioVenta("0.00");
+    setProductos([]);
+    setObservacion("");
+  };
 
   const handleGuardarDatos = async () => {
     try {
@@ -84,21 +85,23 @@ export default function InventoryPage() {
         productos,
         observacion,
         total,
-      }
+      };
 
-      await api.post("/inventario", data)
-      alert("Datos guardados exitosamente")
-      handleLimpiarCampos()
+      await api.post("/inventario", data);
+      alert("Datos guardados exitosamente");
+      handleLimpiarCampos();
     } catch (error) {
-      console.error("Error guardando datos:", error)
-      alert("Error al guardar los datos")
+      console.error("Error guardando datos:", error);
+      alert("Error al guardar los datos");
     }
-  }
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-white to-yellow-50 p-4 sm:p-6">
       <div className="max-w-7xl mx-auto">
-        <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-800 mb-1">Carga de Inventario Móvil</h1>
+        <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-800 mb-1">
+          Carga de Inventario Móvil
+        </h1>
         <p className="text-xs sm:text-sm text-yellow-600 mb-4 sm:mb-6 font-semibold">
           Sistema de Gestión de Inventario
         </p>
@@ -111,8 +114,7 @@ export default function InventoryPage() {
               placeholder="Selecciona origen"
               options={[
                 { value: "panaderia", label: "PANADERÍA" },
-                { value: "carniceria", label: "CARNICERÍA" },
-                { value: "almacen", label: "ALMACÉN" },
+                { value: "reventa", label: "REVENTA" },
               ]}
               value={productoOrigen}
               onChange={setProductoOrigen}
@@ -122,8 +124,7 @@ export default function InventoryPage() {
               placeholder="Selecciona operación"
               options={[
                 { value: "inventario", label: "INVENTARIO" },
-                { value: "entrada", label: "ENTRADA" },
-                { value: "salida", label: "SALIDA" },
+                { value: "DEVOLUCION", label: "DEVOLUCION" },
               ]}
               value={operacion}
               onChange={setOperacion}
@@ -134,8 +135,18 @@ export default function InventoryPage() {
         {/* Section 2: Date and Sucursal - Responsive grid 1 col mobile, 2 cols desktop */}
         <Card className="p-3 sm:p-6 mb-4 sm:mb-6 border-0 shadow-md">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
-            <TextInput label="Fecha" type="date" value={fecha} onChange={setFecha} />
-            <TextInput label="Sucursal" placeholder="Ingresa sucursal" value={sucursal} onChange={setSucursal} />
+            <TextInput
+              label="Fecha"
+              type="date"
+              value={fecha}
+              onChange={setFecha}
+            />
+            <TextInput
+              label="Sucursal"
+              placeholder="Ingresa sucursal"
+              value={sucursal}
+              onChange={setSucursal}
+            />
           </div>
         </Card>
 
@@ -149,30 +160,71 @@ export default function InventoryPage() {
                 placeholder="Selecciona tipo"
                 options={[
                   { value: "codigo", label: "Código de Barras" },
-                  { value: "sku", label: "SKU" },
-                  { value: "interno", label: "Código Interno" },
+                  { value: "sku", label: "Descripcion" },
+                  { value: "interno", label: "Código" },
                 ]}
                 value={tipoCode}
                 onChange={setTipoCode}
               />
+
               <div className="sm:col-span-2">
-                <TextInput label="Código" placeholder="Ingresa código" value={codigo} onChange={setCodigo} />
+                {tipoCode === "codigo" ? (
+                  <div>
+                    <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-2">
+                      Código
+                    </label>
+                    <button
+                      type="button"
+                      className="w-full py-2 px-4 flex items-center justify-center bg-yellow-500 hover:bg-yellow-600 text-gray-800 rounded-lg text-sm sm:text-base"
+                      onClick={() => setShowScanner(true)}
+                    >
+                      <AiOutlineCamera className="w-5 h-5 mr-2" />
+                      Escanear
+                    </button>
+                  </div>
+                ) : (
+                  <TextInput
+                    label="Código"
+                    placeholder="Ingresa código"
+                    value={codigo}
+                    onChange={setCodigo}
+                  />
+                )}
               </div>
+
+              {/* Overlay para el escáner */}
+              {showScanner && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
+                  <div id="scanner" className="w-full max-w-md"></div>
+                </div>
+              )}
             </div>
 
             {/* Quantity and Product Info Row - 1 col mobile, 2 cols desktop */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-4">
-              <TextInput label="Cantidad" type="number" placeholder="0" value={cantidad} onChange={setCantidad} />
+              <TextInput
+                label="Cantidad"
+                type="number"
+                placeholder="0"
+                value={cantidad}
+                onChange={setCantidad}
+              />
               <div className="bg-yellow-100 p-3 rounded-lg border-2 border-yellow-300">
-                <p className="text-xs font-medium text-gray-600">Datos del Producto</p>
-                <p className="text-lg sm:text-2xl font-bold text-yellow-700 mt-2">-</p>
+                <p className="text-xs font-medium text-gray-600">
+                  Datos del Producto
+                </p>
+                <p className="text-lg sm:text-2xl font-bold text-yellow-700 mt-2">
+                  -
+                </p>
               </div>
             </div>
 
             {/* Price Details Row - Responsive grid stacks on mobile */}
             <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
               <div>
-                <label className="block text-xs font-medium text-gray-700 mb-1">P. Venta</label>
+                <label className="block text-xs font-medium text-gray-700 mb-1">
+                  P. Venta
+                </label>
                 <input
                   type="number"
                   value={precioVenta}
@@ -181,7 +233,9 @@ export default function InventoryPage() {
                 />
               </div>
               <div>
-                <label className="block text-xs font-medium text-gray-700 mb-1">Importe</label>
+                <label className="block text-xs font-medium text-gray-700 mb-1">
+                  Importe
+                </label>
                 <input
                   type="number"
                   value={importe}
@@ -190,7 +244,9 @@ export default function InventoryPage() {
                 />
               </div>
               <div>
-                <label className="block text-xs font-medium text-gray-700 mb-1">IVA</label>
+                <label className="block text-xs font-medium text-gray-700 mb-1">
+                  IVA
+                </label>
                 <input
                   type="number"
                   value={iva}
@@ -199,7 +255,9 @@ export default function InventoryPage() {
                 />
               </div>
               <div>
-                <label className="block text-xs font-medium text-gray-700 mb-1">Porc</label>
+                <label className="block text-xs font-medium text-gray-700 mb-1">
+                  Porc
+                </label>
                 <input
                   type="number"
                   value={porc}
@@ -225,7 +283,10 @@ export default function InventoryPage() {
             <h3 className="text-sm sm:text-lg font-semibold text-gray-800 mb-3 sm:mb-4">
               Lista de Productos ({productos.length})
             </h3>
-            <InventoryTable productos={productos} onDelete={handleEliminarProducto} />
+            <InventoryTable
+              productos={productos}
+              onDelete={handleEliminarProducto}
+            />
           </div>
         </Card>
 
@@ -240,7 +301,9 @@ export default function InventoryPage() {
             />
             <div className="bg-yellow-100 p-3 sm:p-4 rounded-lg border-2 border-yellow-300">
               <p className="text-xs font-medium text-gray-600">Total</p>
-              <p className="text-2xl sm:text-3xl font-bold text-yellow-700 mt-1 sm:mt-2">{total.toFixed(2)}</p>
+              <p className="text-2xl sm:text-3xl font-bold text-yellow-700 mt-1 sm:mt-2">
+                {total.toFixed(2)}
+              </p>
             </div>
           </div>
         </Card>
@@ -264,5 +327,5 @@ export default function InventoryPage() {
         </Card>
       </div>
     </div>
-  )
+  );
 }
