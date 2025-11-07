@@ -78,6 +78,7 @@ useEffect(() => {
         });
 
         setFilteredProductos(res.data || []);
+        console.log("Productos encontrados:", res.data);
       } catch (error: any) {
         if (error.response) {
           console.error("Error del servidor:", error.response.data);
@@ -133,6 +134,11 @@ useEffect(() => {
       setCodigo("");
       setCantidad("");
       setPrecioVenta("0.00");
+      setImporte("0.00");
+      setIva("0.0");
+      setPorc("0.0");
+      setCodigo("");
+      setProductoQuery("");
     } catch (error) {
       console.error("Error agregando producto:", error);
     }
@@ -286,7 +292,7 @@ useEffect(() => {
                 placeholder="Selecciona tipo"
                 options={[
                   { value: "codigo", label: "Código de Barras" },
-                  { value: "sku", label: "Descripción" },
+                  { value: "descripcion", label: "Descripción" },
                   { value: "interno", label: "Código Interno" },
                 ]}
                 value={tipoCode}
