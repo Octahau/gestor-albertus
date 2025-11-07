@@ -20,50 +20,56 @@ class ProductosController extends Controller
     }
 
     public function filtrar(Request $request): JsonResponse
-{
-    $query = $request->query('query'); // texto ingresado por el usuario
-    $idSucursal = $request->query('idSucursal'); // la sucursal seleccionada
+    {
+        $query = $request->query('query'); // texto ingresado por el usuario
+        $idSucursal = $request->query('idSucursal'); // la sucursal seleccionada
+        $tipo = $request->query('tipo'); // tipo de búsqueda (codigo, descripcion, interno)
 
-    if (!$query || !$idSucursal) {
-        return response()->json([]);
+        if (!$query || !$idSucursal) {
+            return response()->json([]);
+        }
+
+        // Buscamos la sucursal
+        $sucursal = Sucursal::find($idSucursal);
+        if (!$sucursal) {
+            return response()->json(['error' => 'Sucursal no encontrada'], 404);
+        }
+
+        $idLista = $sucursal->idlistaprecio;
+        if (!$idLista) {
+            return response()->json(['error' => 'La sucursal no tiene lista de precios asociada'], 404);
+        }
+
+        // Determinar campo de búsqueda según el tipo seleccionado
+        $campo = match ($tipo) {
+            'codigo' => 'CodBarra',
+            'descripcion' => 'DesCorta',
+            'interno' => 'ARTICULO', // o el campo que uses en tu tabla
+            default => 'CodBarra',
+        };
+
+        // Buscar productos según el campo
+        $productos = Productos::where($campo, 'LIKE', "%{$query}%")
+            ->get(['idproducto', 'DesCorta', 'CodBarra', 'ARTICULO']);
+
+        // Vincular con su precio e IVA
+        $resultado = $productos->map(function ($producto) use ($idLista) {
+            $precioInfo = ListaPrecio::where('idlistas', $idLista)
+                ->where('idproductos', $producto->idproducto)
+                ->first();
+
+            return [
+                'idproducto' => $producto->idproducto,
+                'descripcion' => $producto->DesCorta,
+                'codbarra' => $producto->CodBarra,
+                'codinterno' => $producto->ARTICULO ?? null,
+                'precio' => $precioInfo->precio ?? null,
+                'iva' => $precioInfo->iva ?? null,
+            ];
+        });
+
+        return response()->json($resultado);
     }
-
-    // Buscamos la sucursal
-    $sucursal = Sucursal::find($idSucursal);
-
-    if (!$sucursal) {
-        return response()->json(['error' => 'Sucursal no encontrada'], 404);
-    }
-
-    // Obtenemos el id de la lista de precios asociada a la sucursal
-    $idLista = $sucursal->idlistaprecio;
-
-    if (!$idLista) {
-        return response()->json(['error' => 'La sucursal no tiene lista de precios asociada'], 404);
-    }
-
-    // Buscamos productos cuyo código de barra contenga el texto ingresado
-    $productos = Productos::where('CodBarra', 'LIKE', "%{$query}%")
-        ->get(['idproducto', 'DesCorta', 'CodBarra']);
-
-    // Relacionamos cada producto con su precio e IVA en esa lista
-    $resultado = $productos->map(function ($producto) use ($idLista) {
-        $precioInfo = ListaPrecio::where('idlistas', $idLista)
-            ->where('idproductos', $producto->idproducto)
-            ->first();
-
-        return [
-            'idproducto' => $producto->idproducto,
-            'descripcion' => $producto->DesCorta,
-            'codbarra' => $producto->CodBarra,
-            'precio' => $precioInfo->precio ?? null,
-            'iva' => $precioInfo->iva ?? null,
-        ];
-    });
-
-    return response()->json($resultado);
-}
-
 
 }
 

@@ -29,8 +29,7 @@ class SucursalController extends Controller
 
         // Buscamos coincidencias en el nombre
         $sucursales = Sucursal::where('NOMBRE', 'LIKE', "%{$query}%")
-                ->get(['idSUCURSALES', 'NOMBRE', 'idlistaprecio']);
+                ->get(['idSUCURSALES', 'NOMBRE', 'idlistaprecio','DIRECCION' ]);
         return response()->json(data: $sucursales);
     }
-
 }
