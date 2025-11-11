@@ -1,4 +1,5 @@
 export interface ProductItem {
+  idproducto: number | undefined;
   id: string;
   codigo: string;
   descripcion: string;
@@ -16,6 +17,7 @@ export interface Producto {
 }
 
 export interface InventoryState {
+  selectedIdProducto?: number | undefined;
   productoOrigen: string;
   operacion: string;
   fecha: string;

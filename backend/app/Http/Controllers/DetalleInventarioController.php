@@ -3,10 +3,14 @@
 namespace App\Http\Controllers;
 
 use App\Models\DetalleInventario;
+use App\Models\Inventario;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\DB;
 use App\Models\ListaPrecio;
 use App\Models\Sucursal;
+use Exception;
+
 class DetalleInventarioController extends Controller
 {
     public function index(): JsonResponse
@@ -22,50 +26,67 @@ class DetalleInventarioController extends Controller
             'porcdesc',
             'DesCortaD')
             ->limit(100)->get();
+        
+        $inventario = Inventario::select(
+            'idinv',
+            'idsuci',
+            'fechai',
+            'subtotal',
+            'comision',
+            'totalinv',
+            'borra_inv',
+            'observac',
+            'estado',
+            'tipo',
+            'operac')
+            ->limit(100)->get();
 
-        return response()->json($detalle);
+        return response()->json([$detalle,$inventario]);
     }
     public function guardar(Request $request): JsonResponse
-    {
-        $validated = $request->validate([
-            'idproducto' => 'required|integer',
-            'cantidad' => 'required|numeric|min:1',
-            'idSucursal' => 'required|integer',
-            'idinv_det' => 'nullable|integer' // opcional, si ya existe
-        ]);
+{
+    $productos = $request->input('productos', []);
 
-        $sucursal = Sucursal::find($validated['idSucursal']);
-        if (!$sucursal) {
-            return response()->json(['error' => 'Sucursal no encontrada'], 404);
-        }
+    if (empty($productos)) {
+        return response()->json(['error' => 'No hay productos'], 400);
+    }
 
-        $precioInfo = ListaPrecio::where('idlistas', $sucursal->idlistaprecio)
-            ->where('idproductos', $validated['idproducto'])
-            ->first();
+    $idinv_det = (DetalleInventario::max('idinv_det') ?? 0) + 1;
 
-        if (!$precioInfo) {
-            return response()->json(['error' => 'No se encontró precio para el producto en esta lista'], 404);
-        }
-
-        // Determinar idinv_det
-        $idinv_det = $validated['idinv_det'] ?? (DetalleInventario::max('idinv_det') + 1 ?? 1);
-
-        $importe = $validated['cantidad'] * $precioInfo->precio;
-
+    $detalles = [];
+    foreach ($productos as $p) {
         $detalle = DetalleInventario::create([
             'idinv_det' => $idinv_det,
-            'idprod_i' => $validated['idproducto'],
-            'cant' => $validated['cantidad'],
-            'punit' => $precioInfo->precio,
-            'importe' => $importe,
+            'idprod_i' => $p['idproducto'] ?? 0,
+            'cant' => floatval($p['cantidad'] ?? 0),
+            'punit' => floatval($p['punit'] ?? 0),
+            'importe' => floatval($p['importe'] ?? 0),
             'porcdesc' => 0,
-            'DesCortaD' => $precioInfo->producto->DesCorta ?? null,
+            'DesCortaD' => $p['descripcion'] ?? null,
         ]);
 
-        return response()->json([
-            'message' => 'Producto agregado correctamente',
-            'detalle' => $detalle,
-            'idinv_det' => $idinv_det // retornamos para que el front lo use en la siguiente carga
-        ]);
+        $detalles[] = $detalle;
     }
+    $inventario = Inventario::create([
+        'idsuci' => $request->input('idSucursal', 1),
+        'fechai' => now(),
+        'subtotal' => array_sum(array_column($productos, 'importe')),
+        'comision' => 0,
+        'totalinv' => array_sum(array_column($productos, 'importe')),
+        'borra_inv' => 0,
+        'observac' => $request->input('observacion', ''),
+        'estado' => '0',
+        'tipo' => 'P',
+        'operac' => 'I',
+    ]);
+
+    return response()->json([
+        'message' => 'Productos guardados correctamente',
+        'detalles' => $detalles,
+        'idinv_det' => $idinv_det
+    ]);
+}
+
+
+
 }

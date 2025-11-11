@@ -53,9 +53,11 @@ export default function InventoryPage() {
 
         {/* Componente 1: Encabezado */}
         <InventoryHeaderForm
-          productoOrigen={form.productoOrigen}
-          operacion={form.operacion}
-          onFormChange={actions.handleFormChange}
+          {...({
+            productoOrigen: form.productoOrigen,
+            operacion: form.operacion,
+            onFormChange: actions.handleFormChange,
+          } as any)}
         />
 
         {/* Componente 2: Meta-datos (Fecha y Sucursal) */}
@@ -81,7 +83,10 @@ export default function InventoryPage() {
           filteredProductos={search.filteredProductos}
           
           // Pasamos las acciones que necesita
-          onFormChange={actions.handleFormChange}
+          onFormChange={(field: string, value: string) =>
+            // adaptar la firma (field: string) => actions espera keyof InventoryState
+            actions.handleFormChange(field as any, value)
+          }
           onProductoSelect={actions.handleProductoSelect}
           onAgregarProducto={actions.handleAgregarProducto}
           onShowScanner={() => {

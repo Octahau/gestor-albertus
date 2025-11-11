@@ -6,6 +6,7 @@ import { ProductItem, Producto, InventoryState, SearchState } from "../definitio
 export function useInventory() {
   // 1. Separamos estados: el formulario principal y los de búsqueda
   const [form, setForm] = useState<InventoryState>({
+    selectedIdProducto: undefined,
     productoOrigen: "",
     operacion: "",
     fecha: new Date().toISOString().split("T")[0],
@@ -38,22 +39,38 @@ export function useInventory() {
   }, [form.precioVenta, form.cantidad]);
   
   // Efecto para buscar sucursales (con debounce)
+  // Efecto para buscar sucursales (con debounce)
   useEffect(() => {
     const delayDebounce = setTimeout(async () => {
-      if (form.sucursal.trim().length === 0) {
+      const query = form.sucursal?.trim() || "";
+      if (query.length === 0) {
         setSearch(prev => ({ ...prev, filteredSucursales: [] }));
         return;
       }
+
       try {
-        const res = await api.get(`/sucursales`, { params: { query: form.sucursal } });
-        setSearch(prev => ({ ...prev, filteredSucursales: res.data || [] }));
+        const res = await api.get(`/sucursales`, { params: { query } });
+        console.log("data de las sucursales", res.data);
+
+        // ✅ Maneja todas las estructuras posibles del backend
+        const sucursales =
+          Array.isArray(res.data)
+            ? res.data
+            : Array.isArray(res.data.sucursales)
+              ? res.data.sucursales
+              : Array.isArray(res.data.data)
+                ? res.data.data
+                : [];
+
+        setSearch(prev => ({ ...prev, filteredSucursales: sucursales }));
       } catch (error) {
         console.error("Error buscando sucursales:", error);
+        setSearch(prev => ({ ...prev, filteredSucursales: [] }));
       }
     }, 400);
+
     return () => clearTimeout(delayDebounce);
   }, [form.sucursal]);
-
   // Efecto para buscar productos
   useEffect(() => {
     if (form.productoQuery.length < 2 || !form.idSucursal) {
@@ -100,38 +117,41 @@ export function useInventory() {
       productoQuery: prod.descripcion,
       precioVenta: prod.precio || "0.00",
       iva: prod.iva || "0.00",
+      selectedIdProducto: prod.idproducto,
     }));
     setSearch(prev => ({ ...prev, filteredProductos: [] }));
   };
 
   const handleAgregarProducto = () => {
-    if (!form.codigo || !form.cantidad) {
-      alert("Por favor completa los campos requeridos");
-      return;
-    }
-    const nuevoProducto: ProductItem = {
-      id: `${Date.now()}`,
-      codigo: form.codigo,
-      descripcion: form.productoQuery || `Producto ${form.codigo}`,
-      cantidad: Number.parseFloat(form.cantidad),
-      precioUnitario: Number.parseFloat(form.precioVenta),
-      importe: Number.parseFloat(form.importe),
-    };
-
-    setForm(prev => ({
-      ...prev,
-      productos: [...prev.productos, nuevoProducto],
-      total: prev.total + nuevoProducto.importe,
-      // Limpiar campos de producto
-      codigo: "",
-      productoQuery: "",
-      cantidad: "",
-      precioVenta: "0.00",
-      importe: "0.00",
-      iva: "0.0",
-      porc: "0.0",
-    }));
+  if (!form.codigo || !form.cantidad) {
+    alert("Por favor completa los campos requeridos");
+    return;
+  }
+  const nuevoProducto: ProductItem = {
+    id: `${Date.now()}`,
+    idproducto: form.selectedIdProducto, // <-- aquí el ID real
+    codigo: form.codigo,
+    descripcion: form.productoQuery || `Producto ${form.codigo}`,
+    cantidad: Number.parseFloat(form.cantidad),
+    precioUnitario: Number.parseFloat(form.precioVenta),
+    importe: Number.parseFloat(form.importe),
   };
+
+  setForm(prev => ({
+    ...prev,
+    productos: [...prev.productos, nuevoProducto],
+    total: prev.total + nuevoProducto.importe,
+    codigo: "",
+    productoQuery: "",
+    cantidad: "",
+    precioVenta: "0.00",
+    importe: "0.00",
+    iva: "0.0",
+    porc: "0.0",
+    selectedIdProducto: undefined, // reset
+  }));
+};
+
 
   const handleEliminarProducto = (id: string) => {
     const producto = form.productos.find(p => p.id === id);
@@ -155,16 +175,44 @@ export function useInventory() {
   };
 
   const handleGuardarDatos = async () => {
-    try {
-      const { filteredSucursales, filteredProductos, ...dataToSave } = { ...form, ...search };
-      await api.post("/inventario", dataToSave);
-      alert("Datos guardados exitosamente");
-      handleLimpiarCampos();
-    } catch (error) {
-      console.error("Error guardando datos:", error);
-      alert("Error al guardar los datos");
+  try {
+    if (!form.idSucursal || form.productos.length === 0) {
+      alert("Debes seleccionar una sucursal y agregar al menos un producto");
+      return;
     }
-  };
+
+    // Preparar payload listo para backend
+    const dataToSend = {
+      idSucursal: form.idSucursal,
+      fecha: form.fecha,
+      total: form.total,
+      observac: form.observacion,
+      productos: form.productos.map(p => ({
+        idproducto: p.idproducto,            // el ID real del producto
+        cantidad: p.cantidad,
+        punit: p.precioUnitario,
+        importe: p.importe,
+        descripcion: p.descripcion,  // opcional, para DesCortaD
+      })),
+    };
+
+    console.log("Enviando al backend:", dataToSend);
+
+    const res = await api.post("/detalle-inventario", dataToSend);
+
+    alert("Datos guardados correctamente");
+    console.log("Respuesta del backend:", res.data);
+
+    // Limpiar formulario
+    handleLimpiarCampos();
+
+  } catch (error: any) {
+    console.error("Error guardando datos:", error);
+    alert("Error al guardar los datos. Revisa la consola.");
+  }
+};
+
+
 
   // 4. Exponemos el estado y los handlers que la UI necesitará
   return {
