@@ -3,9 +3,10 @@
 import { useState } from "react";
 import { Card } from "@/components/ui/card";
 import InventoryTable from "@/components/inventory-table";
+import { AlertMessage } from "@/components/alert-message";
 
 // 1. Importar el hook de lógica
-import { useInventory } from "./hooks/useInventory"; 
+import { useInventory } from "./hooks/useInventory";
 
 // 2. Importar TODOS los nuevos componentes de UI
 import { InventoryHeaderForm } from "./components/InventoryHeaderForm";
@@ -22,7 +23,7 @@ import { ScannerModal } from "./components/ScannerModal";
 
 export default function InventoryPage() {
   // 4. Obtener toda la lógica de datos y acciones desde el hook
-  const { form, search, actions } = useInventory();
+  const { form, search, alert, setAlert, actions } = useInventory();
 
   // 5. El ÚNICO estado que se queda en la página es el estado de la UI (el modal)
   const [showScanner, setShowScanner] = useState(false);
@@ -43,6 +44,8 @@ export default function InventoryPage() {
   // 7. El JSX ahora es solo un "ensamblador" de componentes
   return (
     <div className="min-h-screen bg-gradient-to-br from-white to-yellow-50 p-4 sm:p-6">
+      {alert && <AlertMessage type={alert.type} message={alert.message} />}
+
       <div className="max-w-7xl mx-auto">
         <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-800 mb-1">
           Carga de Inventario Móvil
@@ -69,7 +72,7 @@ export default function InventoryPage() {
           sucursalesList={search.filteredSucursales}
           onSucursalSelect={actions.handleSucursalSelect}
         />
-        
+
         {/* Componente 3: Input de Producto (el más complejo) */}
         <InventoryProductInput
           // Pasamos el estado del formulario y búsqueda
@@ -81,7 +84,6 @@ export default function InventoryPage() {
           iva={form.iva}
           porc={form.porc}
           filteredProductos={search.filteredProductos}
-          
           // Pasamos las acciones que necesita
           onFormChange={(field: string, value: string) =>
             // adaptar la firma (field: string) => actions espera keyof InventoryState
@@ -111,7 +113,9 @@ export default function InventoryPage() {
         {/* Componente 5: Resumen (Observación y Total) */}
         <InventorySummary
           observacion={form.observacion}
-          onObservacionChange={(val) => actions.handleFormChange("observacion", val)}
+          onObservacionChange={(val) =>
+            actions.handleFormChange("observacion", val)
+          }
           total={form.total}
         />
 
