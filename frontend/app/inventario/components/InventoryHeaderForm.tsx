@@ -26,8 +26,8 @@ export function InventoryHeaderForm({
           label="Productos de"
           placeholder="Selecciona origen"
           options={[
-            { value: "panaderia", label: "PANADERÍA" },
-            { value: "reventa", label: "REVENTA" },
+            { value: "PANADERÍA", label: "PANADERÍA" },
+            { value: "REVENTA", label: "REVENTA" },
           ]}
           value={productoOrigen}
           // 2. USAMOS EL HANDLER ESPECÍFICO

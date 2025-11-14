@@ -76,7 +76,9 @@ class DetalleInventarioController extends Controller
             'comision' => 0,
             'totalinv' => array_sum(array_column($productos, 'importe')),
             'borra_inv' => 0,
-            'observac' => $request->input('observacion', ''),
+            'observac' => $request->filled('observac')
+                ? $request->input('observac')
+                : 'Sin observaciones',
             'estado' => '0',
             'tipo' => 'P',
             'operac' => 'I',

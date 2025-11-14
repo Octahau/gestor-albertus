@@ -1,32 +1,39 @@
-"use client"
+"use client";
 
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Label } from "@/components/ui/label";
+import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
 
-interface SelectInputProps {
-  label?: string
-  placeholder?: string
-  options: Array<{ value: string; label: string }>
-  value?: string
-  onChange?: (value: string) => void
-  disabled?: boolean
+interface Option {
+  value: string;
+  label: string;
 }
 
-export function SelectInput({ label, placeholder, options, value, onChange, disabled }: SelectInputProps) {
+interface Props {
+  label?: string;
+  placeholder?: string;
+  value: string;
+  onChange: (value: string) => void;
+  options: Option[];
+}
+
+export function SelectInput({ label, placeholder, value, onChange, options }: Props) {
   return (
-    <div className="space-y-2">
-      {label && <label className="block text-sm font-medium text-gray-700">{label}</label>}
-      <Select value={value} onValueChange={onChange} disabled={disabled}>
-        <SelectTrigger className="rounded-lg border-gray-300">
+    <div className="flex flex-col gap-1">
+      {label && <Label>{label}</Label>}
+
+      <Select value={value} onValueChange={onChange}>
+        <SelectTrigger>
           <SelectValue placeholder={placeholder} />
         </SelectTrigger>
+
         <SelectContent>
-          {options.map((option) => (
-            <SelectItem key={option.value} value={option.value}>
-              {option.label}
+          {options.map((opt) => (
+            <SelectItem key={opt.value} value={opt.value}>
+              {opt.label}
             </SelectItem>
           ))}
         </SelectContent>
       </Select>
     </div>
-  )
+  );
 }

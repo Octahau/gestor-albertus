@@ -27,7 +27,7 @@ interface Props {
   iva: string;
   porc: string;
   filteredProductos: Producto[];
-  
+
   // Handlers
   onFormChange: (field: string, value: string) => void;
   onProductoSelect: (prod: Producto) => void;
@@ -68,18 +68,40 @@ export function InventoryProductInput({
 
           <div className="sm:col-span-2">
             {tipoCode === "codigo" ? (
-              <div>
-                <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-2">
-                  Código
-                </label>
-                <button
-                  type="button"
-                  className="w-full py-2 px-4 flex items-center justify-center bg-yellow-500 hover:bg-yellow-600 text-gray-800 rounded-lg text-sm sm:text-base"
-                  onClick={onShowScanner}
-                >
-                  <AiOutlineCamera className="w-5 h-5 mr-2" />
-                  Escanear
-                </button>
+              <div className="relative">
+                <TextInput
+                  label="Código de Barras"
+                  placeholder="Ingresar código manualmente"
+                  value={productoQuery}
+                  onChange={(val) => onFormChange("productoQuery", val)}
+                />
+
+                {filteredProductos.length > 0 && (
+                  <ul className="absolute z-10 bg-white border border-gray-300 w-full mt-1 rounded-lg shadow-lg max-h-40 overflow-y-auto">
+                    {filteredProductos.map((prod) => (
+                      <li
+                        key={prod.idproducto}
+                        className="px-3 py-2 hover:bg-yellow-100 cursor-pointer text-sm"
+                        onClick={() => onProductoSelect(prod)}
+                      >
+                        <div className="font-semibold text-black">
+                          {prod.descripcion}
+                        </div>
+                        <div className="text-xs text-gray-700">
+                          <strong>Cód. Barra:</strong> {prod.codbarra || "-"}
+                        </div>
+                        <div className="text-xs text-gray-700">
+                          <strong>Cód. Interno:</strong>{" "}
+                          {prod.codinterno || "-"}
+                        </div>
+                        <div className="text-xs text-gray-800 font-medium">
+                          <strong>Precio:</strong> $
+                          {parseFloat(prod.precio || "0").toFixed(2)}
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
+                )}
               </div>
             ) : (
               <div className="relative">
@@ -97,7 +119,7 @@ export function InventoryProductInput({
                   value={productoQuery}
                   onChange={(val) => onFormChange("productoQuery", val)}
                 />
-                
+
                 {filteredProductos.length > 0 && (
                   <ul className="absolute z-10 bg-white border border-gray-300 w-full mt-1 rounded-lg shadow-lg max-h-40 overflow-y-auto">
                     {filteredProductos.map((prod) => (
@@ -106,15 +128,19 @@ export function InventoryProductInput({
                         className="px-3 py-2 hover:bg-yellow-100 cursor-pointer text-sm"
                         onClick={() => onProductoSelect(prod)}
                       >
-                        <div className="font-semibold text-black">{prod.descripcion}</div>
+                        <div className="font-semibold text-black">
+                          {prod.descripcion}
+                        </div>
                         <div className="text-xs text-gray-700">
-                          <strong>Cód. Interno:</strong> {prod.codinterno || "-"}
+                          <strong>Cód. Interno:</strong>{" "}
+                          {prod.codinterno || "-"}
                         </div>
                         <div className="text-xs text-gray-700">
                           <strong>Cód. Barra:</strong> {prod.codbarra || "-"}
                         </div>
                         <div className="text-xs text-gray-800 font-medium">
-                          <strong>Precio:</strong> ${parseFloat(prod.precio || "0").toFixed(2)}
+                          <strong>Precio:</strong> $
+                          {parseFloat(prod.precio || "0").toFixed(2)}
                         </div>
                       </li>
                     ))}

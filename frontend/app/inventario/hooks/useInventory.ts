@@ -29,6 +29,7 @@ export function useInventory() {
     observacion: "",
     total: 0,
   });
+  const [skipNextSearch, setSkipNextSearch] = useState(false);
 
   const [alert, setAlert] = useState<{
     type: "success" | "error" | "warning";
@@ -50,6 +51,10 @@ export function useInventory() {
   // Efecto para buscar sucursales (con debounce)
   // Efecto para buscar sucursales (con debounce)
   useEffect(() => {
+    if (skipNextSearch) {
+      setSkipNextSearch(false);
+      return; // ⬅️ Bloqueamos la búsqueda
+    }
     const delayDebounce = setTimeout(async () => {
       const query = form.sucursal?.trim() || "";
       if (query.length === 0) {
@@ -81,6 +86,11 @@ export function useInventory() {
   }, [form.sucursal]);
   // Efecto para buscar productos
   useEffect(() => {
+    if (skipNextSearch) {
+      setSkipNextSearch(false);
+      return; // ⬅️ Bloqueamos la búsqueda
+    }
+
     if (form.productoQuery.length < 2 || !form.idSucursal) {
       setSearch((prev) => ({ ...prev, filteredProductos: [] }));
       return;
@@ -110,6 +120,8 @@ export function useInventory() {
   };
 
   const handleSucursalSelect = (suc: any) => {
+    setSkipNextSearch(true);
+
     setForm((prev) => ({
       ...prev,
       sucursal: suc.NOMBRE,
@@ -119,6 +131,7 @@ export function useInventory() {
   };
 
   const handleProductoSelect = (prod: Producto) => {
+    setSkipNextSearch(true);   
     setForm((prev) => ({
       ...prev,
       codigo: prod.codbarra,
@@ -225,8 +238,7 @@ export function useInventory() {
       const res = await api.post("/detalle-inventario", dataToSend);
       if (res.data.success) {
         setAlert({ type: "error", message: "Error al guardar los productos" });
-      }
-      else {
+      } else {
         setAlert({
           type: "success",
           message: res.data.message || "Error al guardar los datos",

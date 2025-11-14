@@ -56,11 +56,14 @@ export default function InventoryPage() {
 
         {/* Componente 1: Encabezado */}
         <InventoryHeaderForm
-          {...({
-            productoOrigen: form.productoOrigen,
-            operacion: form.operacion,
-            onFormChange: actions.handleFormChange,
-          } as any)}
+          productoOrigen={form.productoOrigen}
+          operacion={form.operacion}
+          onProductoOrigenChange={(val) =>
+            actions.handleFormChange("productoOrigen", val)
+          }
+          onOperacionChange={(val) =>
+            actions.handleFormChange("operacion", val)
+          }
         />
 
         {/* Componente 2: Meta-datos (Fecha y Sucursal) */}
