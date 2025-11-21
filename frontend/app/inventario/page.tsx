@@ -9,7 +9,6 @@ import { AlertMessage } from "@/components/alert-message";
 import { useInventory } from "./hooks/useInventory";
 
 // 2. Importar TODOS los nuevos componentes de UI
-import { InventoryHeaderForm } from "./components/InventoryHeaderForm";
 import { InventoryMetaForm } from "./components/InventoryMetaForm";
 import { InventoryProductInput } from "./components/InventoryProductInput";
 import { InventorySummary } from "./components/InventorySummary";
@@ -55,16 +54,7 @@ export default function InventoryPage() {
         </p>
 
         {/* Componente 1: Encabezado */}
-        <InventoryHeaderForm
-          productoOrigen={form.productoOrigen}
-          operacion={form.operacion}
-          onProductoOrigenChange={(val) =>
-            actions.handleFormChange("productoOrigen", val)
-          }
-          onOperacionChange={(val) =>
-            actions.handleFormChange("operacion", val)
-          }
-        />
+        {/* De momento oculto  */}
 
         {/* Componente 2: Meta-datos (Fecha y Sucursal) */}
         <InventoryMetaForm

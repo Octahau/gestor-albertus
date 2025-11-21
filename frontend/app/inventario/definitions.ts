@@ -22,7 +22,7 @@ export interface InventoryState {
   operacion: string;
   fecha: string;
   sucursal: string; // Query de búsqueda
-  idSucursal: string; // ID seleccionado
+  idSucursal: any; // ID seleccionado
   tipoCode: string;
   codigo: string;     // Código de barras del producto
   productoQuery: string; // Query de búsqueda de producto

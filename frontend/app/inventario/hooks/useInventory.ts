@@ -1,6 +1,7 @@
 // app/inventario/hooks/useInventory.ts
 import { useState, useEffect } from "react";
 import api from "@/lib/axiosInstance";
+import { inventoryService } from "@/services/inventarioService";
 import {
   ProductItem,
   Producto,
@@ -49,33 +50,29 @@ export function useInventory() {
   }, [form.precioVenta, form.cantidad]);
 
   // Efecto para buscar sucursales (con debounce)
-  // Efecto para buscar sucursales (con debounce)
   useEffect(() => {
     if (skipNextSearch) {
       setSkipNextSearch(false);
-      return; // ⬅️ Bloqueamos la búsqueda
+      return;
     }
+
     const delayDebounce = setTimeout(async () => {
       const query = form.sucursal?.trim() || "";
+
       if (query.length === 0) {
         setSearch((prev) => ({ ...prev, filteredSucursales: [] }));
         return;
       }
 
       try {
-        const res = await api.get(`/sucursales`, { params: { query } });
-        console.log("data de las sucursales", res.data);
+        const res = await inventoryService.searchSucursales(form.sucursal);
 
-        // ✅ Maneja todas las estructuras posibles del backend
-        const sucursales = Array.isArray(res.data)
-          ? res.data
-          : Array.isArray(res.data.sucursales)
-          ? res.data.sucursales
-          : Array.isArray(res.data.data)
-          ? res.data.data
-          : [];
+        const sucursales = Array.isArray(res.data) ? res.data : [];
 
-        setSearch((prev) => ({ ...prev, filteredSucursales: sucursales }));
+        setSearch((prev) => ({
+          ...prev,
+          filteredSucursales: sucursales,
+        }));
       } catch (error) {
         console.error("Error buscando sucursales:", error);
         setSearch((prev) => ({ ...prev, filteredSucursales: [] }));
@@ -84,6 +81,7 @@ export function useInventory() {
 
     return () => clearTimeout(delayDebounce);
   }, [form.sucursal]);
+
   // Efecto para buscar productos
   useEffect(() => {
     if (skipNextSearch) {
@@ -97,14 +95,13 @@ export function useInventory() {
     }
     const fetchProductos = async () => {
       try {
-        const res = await api.get("/productos/filtrar", {
-          params: {
-            tipo: form.tipoCode,
-            query: form.productoQuery,
-            idSucursal: form.idSucursal,
-          },
-        });
-        setSearch((prev) => ({ ...prev, filteredProductos: res.data || [] }));
+        const productos = await inventoryService.searchProductos(
+          form.tipoCode,
+          form.productoQuery,
+          form.idSucursal
+        );
+
+        setSearch((prev) => ({ ...prev, filteredProductos: productos }));
       } catch (error) {
         console.error("Error buscando productos:", error);
       }
@@ -131,7 +128,7 @@ export function useInventory() {
   };
 
   const handleProductoSelect = (prod: Producto) => {
-    setSkipNextSearch(true);   
+    setSkipNextSearch(true);
     setForm((prev) => ({
       ...prev,
       codigo: prod.codbarra,
@@ -235,7 +232,7 @@ export function useInventory() {
 
       console.log("Enviando al backend:", dataToSend);
 
-      const res = await api.post("/detalle-inventario", dataToSend);
+      const res = await inventoryService.saveInventario(dataToSend);
       if (res.data.success) {
         setAlert({ type: "error", message: "Error al guardar los productos" });
       } else {

@@ -1,19 +1,33 @@
-import axios from "axios"
+import axios from "axios";
 
 const api = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_URL +'/api' || "http://127.0.0.1:8000/api",
+  baseURL: process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api",
   headers: {
     "Content-Type": "application/json",
   },
-})
+});
 
-// Add token to requests if it exists
+// Attach token automatically
 api.interceptors.request.use((config) => {
-  const token = localStorage.getItem("auth_token")
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`
+  if (typeof window !== "undefined") {
+    const token = localStorage.getItem("auth_token");
+    if (token) config.headers.Authorization = `Bearer ${token}`;
   }
-  return config
-})
+  return config;
+});
 
-export default api
+// Global error handler
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error?.response?.status === 401) {
+      if (typeof window !== "undefined") {
+        localStorage.removeItem("auth_token");
+        window.location.href = "/login";
+      }
+    }
+    return Promise.reject(error);
+  }
+);
+
+export default api;
