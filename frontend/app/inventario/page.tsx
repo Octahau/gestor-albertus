@@ -1,7 +1,10 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Eye } from "lucide-react";
 import InventoryTable from "@/components/inventory-table";
 import { AlertMessage } from "@/components/alert-message";
 
@@ -21,6 +24,7 @@ import { ScannerModal } from "./components/ScannerModal";
 // interface Producto { ... }
 
 export default function InventoryPage() {
+  const router = useRouter();
   // 4. Obtener toda la lógica de datos y acciones desde el hook
   const { form, search, alert, setAlert, actions } = useInventory();
 
@@ -46,12 +50,23 @@ export default function InventoryPage() {
       {alert && <AlertMessage type={alert.type} message={alert.message} />}
 
       <div className="max-w-7xl mx-auto">
-        <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-800 mb-1">
-          Carga de Inventario Móvil
-        </h1>
-        <p className="text-xs sm:text-sm text-yellow-600 mb-4 sm:mb-6 font-semibold">
-          Sistema de Gestión de Inventario
-        </p>
+        <div className="flex justify-between items-start mb-4 sm:mb-6">
+          <div>
+            <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-800 mb-1">
+              Carga de Inventario Móvil
+            </h1>
+            <p className="text-xs sm:text-sm text-yellow-600 font-semibold">
+              Sistema de Gestión de Inventario
+            </p>
+          </div>
+          <Button
+            onClick={() => router.push("/inventario/listado")}
+            className="bg-yellow-500 hover:bg-yellow-600 text-gray-800 font-semibold flex items-center gap-2"
+          >
+            <Eye className="w-4 h-4" />
+            Ver detalle
+          </Button>
+        </div>
 
         {/* Componente 1: Encabezado */}
         {/* De momento oculto  */}

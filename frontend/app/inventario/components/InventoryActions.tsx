@@ -11,10 +11,10 @@ export function InventoryActions({ onClear, onSave }: Props) {
   return (
     <Card className="p-3 sm:p-6 border-0 shadow-md">
       <div className="grid grid-cols-2 gap-2 sm:gap-4">
-        <Button onClick={onClear} className="bg-gray-500 ...">
+        <Button onClick={onClear} className="bg-gray-500 hover:bg-gray-600 text-white font-semibold">
           Limpiar
         </Button>
-        <Button onClick={onSave} className="bg-green-500 ...">
+        <Button onClick={onSave} className="bg-yellow-500 hover:bg-yellow-600 text-gray-800 font-semibold">
           Guardar
         </Button>
       </div>

@@ -166,9 +166,8 @@ export function InventoryProductInput({
                       return (
                         <li
                           key={prod.idproducto}
-                          className={`px-3 py-2 cursor-pointer text-sm ${
-                            isHighlighted ? "bg-yellow-200" : "hover:bg-yellow-100"
-                          }`}
+                          className={`px-3 py-2 cursor-pointer text-sm ${isHighlighted ? "bg-yellow-200" : "hover:bg-yellow-100"
+                            }`}
                           onClick={() => selectAndFocusQuantity(prod)} // <--- Click también salta
                           onMouseEnter={() => setHighlightIndex(index)}
                         >
@@ -224,9 +223,8 @@ export function InventoryProductInput({
                       return (
                         <li
                           key={prod.idproducto}
-                          className={`px-3 py-2 cursor-pointer text-sm ${
-                            isHighlighted ? "bg-yellow-200" : "hover:bg-yellow-100"
-                          }`}
+                          className={`px-3 py-2 cursor-pointer text-sm ${isHighlighted ? "bg-yellow-200" : "hover:bg-yellow-100"
+                            }`}
                           onClick={() => selectAndFocusQuantity(prod)} // <--- Click también salta
                           onMouseEnter={() => setHighlightIndex(index)}
                         >
@@ -258,16 +256,16 @@ export function InventoryProductInput({
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-4">
           {/* Reemplazo de TextInput por input nativo para controlar el foco y eventos */}
           <div className="space-y-2">
-             <label className="block text-xs font-medium text-gray-700 mb-1">Cantidad</label>
-             <input
-                id="inventory-quantity-input" // <--- ID para recibir el foco
-                type="number"
-                placeholder="0"
-                value={cantidad}
-                onChange={(e) => onFormChange("cantidad", e.target.value)}
-                onKeyDown={handleQuantityKeyDown} // <--- Detectar Enter
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm text-black focus:outline-none focus:ring-2 focus:ring-blue-500"
-             />
+            <label className="block text-xs font-medium text-gray-700 mb-1">Cantidad</label>
+            <input
+              id="inventory-quantity-input" // <--- ID para recibir el foco
+              type="number"
+              placeholder="0"
+              value={cantidad}
+              onChange={(e) => onFormChange("cantidad", e.target.value)}
+              onKeyDown={handleQuantityKeyDown} // <--- Detectar Enter
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm text-black focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
           </div>
 
           <div className="bg-yellow-100 p-3 rounded-lg border-2 border-yellow-300">
@@ -336,7 +334,7 @@ export function InventoryProductInput({
             <Button
               id="inventory-add-button" // <--- ID para recibir el foco final
               onClick={onAgregarProducto}
-              className="w-full bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 rounded-lg text-xs sm:text-sm focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+              className="w-full bg-gray-800 hover:bg-gray-900 text-yellow-500 font-semibold py-2 rounded-lg text-xs sm:text-sm focus:ring-2 focus:ring-offset-2 focus:ring-gray-800"
             >
               Ingresar
             </Button>
