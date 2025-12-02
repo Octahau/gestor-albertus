@@ -6,9 +6,13 @@ use App\Models\DetalleInventario;
 use App\Models\Inventario;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
+use App\Http\Requests\StoreInventarioRequest;
+use App\Repositories\ProductRepository;
 
 class DetalleInventarioController extends Controller
 {
+
+
     public function index(): JsonResponse
     {
         // Trae solo los campos idproducto, articulo y codbarra
@@ -41,13 +45,10 @@ class DetalleInventarioController extends Controller
 
         return response()->json([$detalle, $inventario]);
     }
-    public function guardar(Request $request): JsonResponse
+    public function guardar(StoreInventarioRequest $request): JsonResponse
     {
-        $productos = $request->input('productos', []);
-
-        if (empty($productos)) {
-            return response()->json(['error' => 'No hay productos'], 400);
-        }
+        $datosValidos = $request->validated();
+        $productos = $datosValidos['productos'];
 
         $idsid = (DetalleInventario::max('idsid') ?? 0) + 1;
         $idinv = (Inventario::max('idinv') ?? 0) + 1;

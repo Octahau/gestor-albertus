@@ -7,10 +7,16 @@ use App\Models\ListaPrecio;
 use App\Models\Sucursal;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-
+use App\Repositories\ProductRepository;
 
 class ProductosController extends Controller
 {
+    protected $productRepository;
+
+    public function __construct(ProductRepository $productRepository)
+    {
+        $this->productRepository = $productRepository;
+    }
     public function index(): JsonResponse
     {
         // Trae solo los campos idproducto, articulo y codbarra
@@ -48,21 +54,7 @@ class ProductosController extends Controller
             default => 'CodBarra',
         };
 
-        // 3. Consulta con JOIN (Optimización clave)
-        // Unimos la tabla productos con la tabla de precios (rlipr)
-        $resultados = Productos::join('rlipr', 'productos.idproducto', '=', 'rlipr.idproductos')
-            ->where('rlipr.idlistas', $idLista) // Filtramos por la lista de la sucursal
-            ->where('rlipr.precio', '>', 0)      // CONDICIÓN CLAVE: Precio mayor a 0
-            ->where("productos.$campo", 'LIKE', "%{$query}%") // Filtro de búsqueda del usuario
-            ->select([
-                'productos.idproducto',
-                'productos.DesCorta as descripcion',
-                'productos.CodBarra as codbarra',
-                'productos.ARTICULO as codinterno',
-                'rlipr.precio',
-                'rlipr.iva'
-            ])
-            ->get();
+        $resultados = $this->productRepository->searchWithPrice($idLista, $campo, $query);
 
         return response()->json($resultados);
     }
